@@ -51,12 +51,12 @@ const checkPersonOnVisitedC = async (id) => {
 const checkPersonJoin = async (userIdReq) => {
   const result = await checkPersonOnVisitedC(userIdReq);
   console.log("from check visited country :", result.rows);
-  if (!result.rows > 0) {
+  if (!result.length > 0) {
     console.log("user table has not been joined");
   } else {
     try {
       const personData = await checkPersonOnFamily(userIdReq);
-      if (!personData > 0) {
+      if (!personData.length > 0) {
         console.log("person not found in the database");
       } else {
         console.log("inserting.......");
@@ -80,7 +80,8 @@ const checkPersonCountries = async (userIdReq) => {
       [userIdReq],
     );
     console.log("checking data : ", result.rows);
-    if (!result.rows > 0) {
+    console.log(result.rows.length);
+    if (!result.rows.length > 0) {
       try {
         const result = await checkPersonJoin(userIdReq);
         console.log(result);
@@ -99,6 +100,10 @@ const checkPersonCountries = async (userIdReq) => {
     console.log(error);
   }
 };
+
+const deleteNullCountryCode = async () => {
+  const result = await db.query("DELETE FROM visited_countries WHERE country_code is NULL")
+}
 
 async function checkVisisted() {
   const result = await db.query("SELECT country_code FROM visited_countries");
@@ -156,6 +161,7 @@ app.post("/add", async (req, res) => {
         "INSERT INTO visited_countries (country_code,person_id) VALUES ($1, $2)",
         [countryCode, userIdSelected],
       );
+      deleteNullCountryCode()
       res.redirect("/user/" + userIdSelected);
     } catch (err) {
       // console.log(err, "error inserting data");
@@ -170,7 +176,7 @@ app.post("/add", async (req, res) => {
 app.post("/user", async (req, res) => {
   const { user, add } = req.body;
   console.log(user);
-  console.log(add)
+  console.log(add);
   if (add) {
     try {
       res.render("new.ejs");
@@ -179,9 +185,11 @@ app.post("/user", async (req, res) => {
     }
   } else {
     const result = await checkPersonOnVisitedC(user);
-    console.log("Result from checkC : ", result);
-    console.log(typeof result);
-    if (!result.rows > 0) {
+    // console.log("Result from checkC : ", result);
+    // console.log(typeof result);
+    // console.log("result from post  :" , result);
+    // console.log("result from post LENGTH :" ,result.length)
+    if (!result.length > 0) {
       console.log("user not on country table");
       try {
         const result = insertPersonData(user);
