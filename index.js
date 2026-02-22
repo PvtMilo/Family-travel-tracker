@@ -222,9 +222,10 @@ app.post("/new", async (req, res) => {
   //Hint: The RETURNING keyword can return the data that was inserted.
   //https://www.postgresql.org/docs/current/dml-returning.html
   const { name, color } = req.body;
+  console.log(typeof(typeof(color)))
   // console.log(color.length)
   console.log(name.length);
-  if (!name.length > 0 && !color) {
+  if (!name.length > 0 || !color) {
     return res.render("new.ejs", { error: "input the correct data!" });
   } else {
     console.log("data meet the req!");
